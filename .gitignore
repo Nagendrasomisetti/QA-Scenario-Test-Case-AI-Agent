@@ -1,0 +1,48 @@
+# Node dependency caches
+node_modules/
+.pnp
+.pnp.js
+
+# Testing
+/coverage
+.nyc_output
+
+# Production / Build outputs
+/build
+.next/
+out/
+
+# Python Virtual Environments
+venv/
+.venv/
+env/
+ENV/
+pyvenv.cfg
+.python-version
+
+# Python caches
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+
+# Local databases
+*.db
+*.sqlite3
+
+# Environment credentials
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.env
+*.pem
+
+# IDEs and System files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
