@@ -48,7 +48,7 @@ export interface MissingRequirement {
 }
 
 export interface AnalysisResponse {
-  id?: number;  # Database ID
+  id?: number;  // Database ID
   source_type: 'text' | 'pdf' | 'image';
   confidence_score: number;
   pages_processed: number;

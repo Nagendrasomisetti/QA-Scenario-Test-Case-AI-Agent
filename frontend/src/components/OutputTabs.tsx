@@ -25,35 +25,35 @@ export const OutputTabs: React.FC<OutputTabsProps> = ({ data }) => {
   const [activeTab, setActiveTab] = useState<TabType>('scenarios');
 
   const tabsConfig = [
-    { key: 'scenarios', label: 'Scenarios', icon: FileText, count: data.scenarios.length },
-    { key: 'test_cases', label: 'Test Cases', icon: ShieldCheck, count: data.test_cases.length },
-    { key: 'positive_cases', label: 'Positive Cases', icon: CheckCircle2, count: data.positive_cases.length },
-    { key: 'negative_cases', label: 'Negative Cases', icon: XCircle, count: data.negative_cases.length },
-    { key: 'edge_cases', label: 'Edge Cases', icon: HelpCircle, count: data.edge_cases.length },
-    { key: 'risks', label: 'Risks', icon: AlertTriangle, count: data.risks.length },
-    { key: 'missing_requirements', label: 'Missing Specs', icon: AlertOctagon, count: data.missing_requirements.length },
+    { key: 'scenarios', label: 'Scenarios', icon: FileText, count: data.scenarios?.length || 0 },
+    { key: 'test_cases', label: 'Test Cases', icon: ShieldCheck, count: data.test_cases?.length || 0 },
+    { key: 'positive_cases', label: 'Positive Cases', icon: CheckCircle2, count: data.positive_cases?.length || 0 },
+    { key: 'negative_cases', label: 'Negative Cases', icon: XCircle, count: data.negative_cases?.length || 0 },
+    { key: 'edge_cases', label: 'Edge Cases', icon: HelpCircle, count: data.edge_cases?.length || 0 },
+    { key: 'risks', label: 'Risks', icon: AlertTriangle, count: data.risks?.length || 0 },
+    { key: 'missing_requirements', label: 'Missing Specs', icon: AlertOctagon, count: data.missing_requirements?.length || 0 },
   ] as const;
 
   // Format active tab data as a clean, copyable string
   const getCopyableText = () => {
     switch (activeTab) {
       case 'scenarios':
-        return data.scenarios.map(s => `[${s.id}] ${s.title}\nDescription: ${s.description}\n`).join('\n');
+        return (data.scenarios || []).map(s => `[${s.id}] ${s.title}\nDescription: ${s.description}\n`).join('\n');
       case 'test_cases':
-        return data.test_cases.map(t => 
+        return (data.test_cases || []).map(t => 
           `[${t.id}] ${t.title}\nPreconditions: ${t.preconditions}\nSteps:\n${t.steps.map((s, idx) => `  ${idx + 1}. ${s}`).join('\n')}\nExpected Result: ${t.expected_result}\n`
         ).join('\n');
       case 'positive_cases':
       case 'negative_cases':
       case 'edge_cases':
-        const list = data[activeTab];
+        const list = data[activeTab] || [];
         return list.map(c => 
           `[${c.id}] ${c.title}\nSteps:\n${c.steps.map((s, idx) => `  ${idx + 1}. ${s}`).join('\n')}\nExpected Result: ${c.expected_result}\n`
         ).join('\n');
       case 'risks':
-        return data.risks.map(r => `[${r.id}] Impact: ${r.impact}\nDescription: ${r.description}\nMitigation: ${r.mitigation}\n`).join('\n');
+        return (data.risks || []).map(r => `[${r.id}] Impact: ${r.impact}\nDescription: ${r.description}\nMitigation: ${r.mitigation}\n`).join('\n');
       case 'missing_requirements':
-        return data.missing_requirements.map(m => `[${m.id}] Impact: ${m.impact}\nDescription: ${m.description}\n`).join('\n');
+        return (data.missing_requirements || []).map(m => `[${m.id}] Impact: ${m.impact}\nDescription: ${m.description}\n`).join('\n');
       default:
         return '';
     }
@@ -176,7 +176,7 @@ export const OutputTabs: React.FC<OutputTabsProps> = ({ data }) => {
           <div className="space-y-4 max-h-[500px] overflow-y-auto pr-1">
             
             {/* SCENARIOS TAB */}
-            {activeTab === 'scenarios' && data.scenarios.map((scenario) => (
+            {activeTab === 'scenarios' && (data.scenarios || []).map((scenario) => (
               <div
                 key={scenario.id}
                 className="p-5 border border-slate-100 dark:border-slate-800/80 rounded-xl hover:border-slate-200 dark:hover:border-slate-700 transition-all bg-slate-50/30 dark:bg-slate-950/10"
@@ -196,7 +196,7 @@ export const OutputTabs: React.FC<OutputTabsProps> = ({ data }) => {
             ))}
 
             {/* TEST CASES TAB */}
-            {activeTab === 'test_cases' && data.test_cases.map((testCase) => (
+            {activeTab === 'test_cases' && (data.test_cases || []).map((testCase) => (
               <div
                 key={testCase.id}
                 className="p-5 border border-slate-100 dark:border-slate-800/80 rounded-xl bg-slate-50/30 dark:bg-slate-950/10"
@@ -250,7 +250,7 @@ export const OutputTabs: React.FC<OutputTabsProps> = ({ data }) => {
 
             {/* POSITIVE / NEGATIVE / EDGE CASES TAB */}
             {(activeTab === 'positive_cases' || activeTab === 'negative_cases' || activeTab === 'edge_cases') && 
-              data[activeTab].map((item) => (
+              (data[activeTab] || []).map((item) => (
                 <div
                   key={item.id}
                   className="p-5 border border-slate-100 dark:border-slate-800/80 rounded-xl bg-slate-50/30 dark:bg-slate-950/10"
@@ -298,7 +298,7 @@ export const OutputTabs: React.FC<OutputTabsProps> = ({ data }) => {
             }
 
             {/* RISKS TAB */}
-            {activeTab === 'risks' && data.risks.map((risk) => (
+            {activeTab === 'risks' && (data.risks || []).map((risk) => (
               <div
                 key={risk.id}
                 className="p-5 border border-slate-100 dark:border-slate-800/80 rounded-xl bg-slate-50/30 dark:bg-slate-950/10"
@@ -336,7 +336,7 @@ export const OutputTabs: React.FC<OutputTabsProps> = ({ data }) => {
             ))}
 
             {/* MISSING REQUIREMENTS TAB */}
-            {activeTab === 'missing_requirements' && data.missing_requirements.map((missing) => (
+            {activeTab === 'missing_requirements' && (data.missing_requirements || []).map((missing) => (
               <div
                 key={missing.id}
                 className="p-5 border border-slate-100 dark:border-slate-800/80 rounded-xl bg-slate-50/30 dark:bg-slate-950/10 flex flex-col md:flex-row md:items-center justify-between gap-4"
