@@ -1,6 +1,15 @@
 import { AnalysisResponse, AnalysisSummary, DashboardStats } from '../types/api';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+const getApiBaseUrl = (): string => {
+  let url = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+  // If the URL is set but doesn't end with /api or /api/, append /api
+  if (url && !url.endsWith('/api') && !url.endsWith('/api/')) {
+    url = url.replace(/\/$/, '') + '/api';
+  }
+  return url;
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 export class ApiService {
   /**
