@@ -24,9 +24,24 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+import logging
+import os
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("QA_Agent_Backend")
+
 # Include Routers
 app.include_router(analyze.router, prefix="/api", tags=["Analysis"])
 app.include_router(history.router, prefix="/api", tags=["History & Exports"])
+
+@app.on_event("startup")
+def startup_event():
+    logger.info("Backend startup: QA Scenario & Test Case AI Agent API is starting up...")
+    gemini_key = os.getenv("GEMINI_API_KEY")
+    if gemini_key:
+        logger.info(f"Gemini SDK readiness check: GEMINI_API_KEY is configured (length: {len(gemini_key)})")
+    else:
+        logger.warning("Gemini SDK readiness check: GEMINI_API_KEY is NOT set in environment variables!")
 
 @app.get("/")
 def read_root():

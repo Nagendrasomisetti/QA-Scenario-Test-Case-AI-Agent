@@ -43,6 +43,20 @@ class MissingRequirement(BaseModel):
     description: str
     impact: str  # High, Medium, Low
 
+class GeminiAnalysisResponse(BaseModel):
+    source_type: str  # "text" | "pdf" | "image"
+    confidence_score: float  # e.g., 0.92
+    pages_processed: int  # 0 if not PDF
+    characters_extracted: int  # 0 if not PDF or text
+    visual_observations: List[str]  # Empty if not image
+    scenarios: List[Scenario]
+    test_cases: List[TestCase]
+    positive_cases: List[PositiveCase]
+    negative_cases: List[NegativeCase]
+    edge_cases: List[EdgeCase]
+    risks: List[Risk]
+    missing_requirements: List[MissingRequirement]
+
 class AnalysisResponse(BaseModel):
     id: Optional[int] = None  # Database primary key (populated when persisted)
     source_type: str  # "text" | "pdf" | "image"

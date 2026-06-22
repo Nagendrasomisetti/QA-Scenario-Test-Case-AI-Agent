@@ -7,7 +7,7 @@ import google.generativeai as genai
 from google.generativeai.types import GenerateContentResponse
 from pydantic import ValidationError
 
-from app.models.schemas import AnalysisResponse
+from app.models.schemas import AnalysisResponse, GeminiAnalysisResponse
 from app.services.qa_system_prompt import QA_SYSTEM_INSTRUCTION, QA_USER_PROMPT_TEMPLATE, PROMPT_VERSION
 from app.services.text_analyzer import TextAnalyzer
 from app.services.pdf_analyzer import PdfAnalyzer
@@ -102,7 +102,7 @@ class GeminiAnalyzerService:
                     contents,
                     generation_config=genai.GenerationConfig(
                         response_mime_type="application/json",
-                        response_schema=AnalysisResponse,
+                        response_schema=GeminiAnalysisResponse,
                         temperature=0.2,
                     )
                 )

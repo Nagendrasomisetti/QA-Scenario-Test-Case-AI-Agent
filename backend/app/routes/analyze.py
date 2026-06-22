@@ -25,8 +25,12 @@ async def analyze(
     db: Session = Depends(get_db)
 ):
     start_time = time.time()
-    
     req_text = requirement or ""
+    logger.info(
+        f"Incoming analyze request received. requirement_len={len(req_text)}, "
+        f"pdf_file={pdf_file.filename if pdf_file else 'None'}, "
+        f"image_file={image_file.filename if image_file else 'None'}"
+    )
     pdf_bytes = None
     image_bytes = None
     image_mime = "image/png"
