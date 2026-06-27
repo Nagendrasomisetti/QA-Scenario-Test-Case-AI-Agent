@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 # Add backend app directory to path so imports work
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from app.services.gemini_analyzer import GeminiAnalyzerService
+from app.services.analyzer_factory import AnalyzerFactory
 from app.models.schemas import AnalysisResponse
 
 # Load environment variables
@@ -26,12 +26,9 @@ async def run_evaluation():
     print("           QA SCENARIO & TEST CASE AI AGENT EVALUATION RUN (PHASE 3)")
     print("=" * 70)
     
-    api_key = os.getenv("GEMINI_API_KEY")
-    if not api_key:
-        print("[-] ERROR: GEMINI_API_KEY is not set. Please set it in your backend/.env file.")
-        sys.exit(1)
-        
-    print("[+] GEMINI_API_KEY found. Running test suite...")
+    provider_chain = os.getenv("LLM_PROVIDER_CHAIN", "gemini")
+    print(f"[+] Provider chain configured as: {provider_chain}")
+    print("[+] Running test suite...")
     
     all_passed = True
     
@@ -42,7 +39,7 @@ async def run_evaluation():
         start_time = time.time()
         try:
             # Call analyzer
-            result: AnalysisResponse = await GeminiAnalyzerService.analyze_requirements(requirement)
+            result: AnalysisResponse = await AnalyzerFactory.analyze_requirements(requirement)
             duration = time.time() - start_time
             
             print(f"    [+] Response received in {duration:.2f}s")

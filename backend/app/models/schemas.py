@@ -43,7 +43,7 @@ class MissingRequirement(BaseModel):
     description: str
     impact: str  # High, Medium, Low
 
-class GeminiAnalysisResponse(BaseModel):
+class LLMAnalysisResponse(BaseModel):
     source_type: str  # "text" | "pdf" | "image"
     confidence_score: float  # e.g., 0.92
     pages_processed: int  # 0 if not PDF

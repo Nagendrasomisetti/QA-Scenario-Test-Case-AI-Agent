@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.db_models import DBAnalysis
 from app.models.schemas import AnalysisResponse
-from app.services.gemini_analyzer import GeminiAnalyzerService
+from app.services.analyzer_factory import AnalyzerFactory
 from dotenv import load_dotenv
 import logging
 
@@ -85,7 +85,7 @@ async def analyze(
 
     # Perform analysis
     try:
-        response = await GeminiAnalyzerService.analyze_requirements(
+        response = await AnalyzerFactory.analyze_requirements(
             requirement=req_text,
             pdf_bytes=pdf_bytes,
             image_bytes=image_bytes,

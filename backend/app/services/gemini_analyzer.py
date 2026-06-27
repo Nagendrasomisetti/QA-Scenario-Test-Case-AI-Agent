@@ -1,24 +1,38 @@
 import os
 import time
-import json
-import logging
-from typing import Optional, Dict, Any, List
-import google.generativeai as genai
-from google.generativeai.types import GenerateContentResponse
 from pydantic import ValidationError
 
-from app.models.schemas import AnalysisResponse, GeminiAnalysisResponse
+from app.models.schemas import AnalysisResponse, LLMAnalysisResponse
 from app.services.qa_system_prompt import QA_SYSTEM_INSTRUCTION, QA_USER_PROMPT_TEMPLATE, PROMPT_VERSION
 from app.services.text_analyzer import TextAnalyzer
 from app.services.pdf_analyzer import PdfAnalyzer
-from app.services.image_analyzer import ImageAnalyzer, IMAGE_QA_SYSTEM_INSTRUCTION
+from app.services.image_analyzer import ImageAnalyzer
+from app.services.base_analyzer import BaseLLMAnalyzer
+
+import json
+import logging
+from typing import Optional, Any, List
+import google.generativeai as genai
+from google.generativeai.types import GenerateContentResponse
 
 logger = logging.getLogger("QA_Agent_GeminiAnalyzer")
 logger.setLevel(logging.INFO)
 
-class GeminiAnalyzerService:
-    @staticmethod
-    def _initialize_client() -> bool:
+from app.services.base_analyzer import BaseLLMAnalyzer
+
+class GeminiAnalyzerService(BaseLLMAnalyzer):
+    @property
+    def provider_name(self) -> str:
+        return "gemini"
+
+    @property
+    def model_name(self) -> str:
+        return "gemini-2.5-flash"
+
+    def __init__(self):
+        self._initialize_client()
+
+    def _initialize_client(self) -> bool:
         api_key = os.getenv("GEMINI_API_KEY")
         if not api_key:
             logger.error("GEMINI_API_KEY environment variable is not set.")
@@ -26,9 +40,8 @@ class GeminiAnalyzerService:
         genai.configure(api_key=api_key)
         return True
 
-    @classmethod
     async def analyze_requirements(
-        cls, 
+        self, 
         requirement: str = "",
         pdf_bytes: Optional[bytes] = None,
         image_bytes: Optional[bytes] = None,
@@ -36,8 +49,10 @@ class GeminiAnalyzerService:
     ) -> AnalysisResponse:
         total_start_time = time.time()
         
-        # Initialize Gemini SDK
-        if not cls._initialize_client():
+        # Initialize Gemini SDK (already done in init, but keeping logic if needed)
+        # We assume if init passed or if we are here, env var exists, else we can check again.
+        api_key = os.getenv("GEMINI_API_KEY")
+        if not api_key:
             raise ValueError("GEMINI_API_KEY is missing. Please configure it in your environment.")
 
         # Determine source type and orchestrate pre-analysis
@@ -83,9 +98,8 @@ class GeminiAnalyzerService:
             cleaned_req = TextAnalyzer.clean_text(requirement)
             contents.append(QA_USER_PROMPT_TEMPLATE.format(requirement=cleaned_req))
 
-        model_name = "gemini-2.5-flash"
         model = genai.GenerativeModel(
-            model_name=model_name,
+            model_name=self.model_name,
             system_instruction=system_instruction
         )
         
@@ -102,7 +116,7 @@ class GeminiAnalyzerService:
                     contents,
                     generation_config=genai.GenerationConfig(
                         response_mime_type="application/json",
-                        response_schema=GeminiAnalysisResponse,
+                        response_schema=LLMAnalysisResponse,
                         temperature=0.2,
                     )
                 )
