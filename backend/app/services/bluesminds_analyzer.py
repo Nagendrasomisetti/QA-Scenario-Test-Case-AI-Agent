@@ -8,6 +8,7 @@ from pydantic import ValidationError
 
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import SystemMessage, HumanMessage
+from langchain.output_parsers import PydanticOutputParser
 
 from app.models.schemas import AnalysisResponse, LLMAnalysisResponse
 from app.services.qa_system_prompt import QA_SYSTEM_INSTRUCTION, QA_USER_PROMPT_TEMPLATE, PROMPT_VERSION
@@ -43,8 +44,7 @@ class BluesMindsAnalyzerService(BaseLLMAnalyzer):
             temperature=0.2,
             max_retries=2
         )
-        # Using with_structured_output for schema compliance
-        self.structured_llm = self.llm.with_structured_output(LLMAnalysisResponse)
+        self.parser = PydanticOutputParser(pydantic_object=LLMAnalysisResponse)
 
     async def analyze_requirements(
         self,
@@ -59,7 +59,8 @@ class BluesMindsAnalyzerService(BaseLLMAnalyzer):
         pages_processed = 0
         characters_extracted = 0
 
-        system_instruction = QA_SYSTEM_INSTRUCTION
+        format_instructions = self.parser.get_format_instructions()
+        system_instruction = QA_SYSTEM_INSTRUCTION + f"\n\n{format_instructions}"
         messages = []
 
         if image_bytes:
@@ -106,11 +107,29 @@ class BluesMindsAnalyzerService(BaseLLMAnalyzer):
         try:
             llm_start_time = time.time()
             
-            # Invoke structured LLM
-            parsed_response: LLMAnalysisResponse = await self.structured_llm.ainvoke(messages)
+            # Invoke standard LLM
+            raw_response = await self.llm.ainvoke(messages)
             
             llm_duration = time.time() - llm_start_time
             logger.info(f"BluesMinds API call returned in {llm_duration:.3f} seconds.")
+            
+            # Parse the text response manually
+            raw_text = raw_response.content
+            # Handle potential markdown wrappers
+            if raw_text.startswith("```json"):
+                raw_text = raw_text.replace("```json\n", "", 1)
+                if raw_text.endswith("```"):
+                    raw_text = raw_text[:-3]
+            elif raw_text.startswith("```"):
+                raw_text = raw_text.replace("```\n", "", 1)
+                if raw_text.endswith("```"):
+                    raw_text = raw_text[:-3]
+                    
+            try:
+                parsed_response: LLMAnalysisResponse = self.parser.parse(raw_text.strip())
+            except Exception as parse_err:
+                logger.error(f"Failed to parse BluesMinds JSON output: {raw_text[:200]}...")
+                raise ValueError(f"BluesMinds returned invalid JSON format: {str(parse_err)}")
             
             # Convert to dictionary to apply defaults and transform to AnalysisResponse
             parsed_json = parsed_response.model_dump()

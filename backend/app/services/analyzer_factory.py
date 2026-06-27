@@ -47,7 +47,7 @@ class AnalyzerFactory:
         
         providers = cls.get_providers()
         
-        last_error = None
+        error_details = []
         for i, provider in enumerate(providers):
             start_time = time.time()
             logger.info(
@@ -72,7 +72,8 @@ class AnalyzerFactory:
                 return response
             except Exception as e:
                 processing_time = time.time() - start_time
-                last_error = e
+                error_msg = str(e)
+                error_details.append(f"[{provider.provider_name}] {error_msg}")
                 fallback_provider = providers[i+1].provider_name if i < len(providers) - 1 else "None"
                 
                 logger.error(
@@ -89,4 +90,7 @@ class AnalyzerFactory:
                 else:
                     logger.error("All configured LLM providers failed.")
                     
-        raise RuntimeError(f"Analysis failed across all providers in chain. Last error: {str(last_error)}")
+        raise RuntimeError(
+            "Analysis failed across all providers in chain.\n"
+            f"Errors encountered:\n" + "\n".join(error_details)
+        )
